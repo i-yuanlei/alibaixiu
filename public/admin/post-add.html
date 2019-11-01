@@ -28,7 +28,7 @@
       <!-- <div class="alert alert-danger">
         <strong>错误！</strong>发生XXX错误
       </div> -->
-      <form class="row">
+      <form class="row" id="addForm">
         <div class="col-md-9">
           <div class="form-group">
             <label for="title">标题</label>
@@ -45,12 +45,11 @@
             <!-- show when image chose -->
             <img class="help-block thumbnail" style="display: none">
             <input id="feature" class="form-control" name="feature" type="file">
+            <input type="hidden" id="thumbnail" name="thumbnail" >
           </div>
           <div class="form-group">
             <label for="category">所属分类</label>
             <select id="category" class="form-control" name="category">
-              <option value="1">未分类</option>
-              <option value="2">潮生活</option>
             </select>
           </div>
           <div class="form-group">
@@ -60,8 +59,8 @@
           <div class="form-group">
             <label for="status">状态</label>
             <select id="status" class="form-control" name="status">
-              <option value="drafted">草稿</option>
-              <option value="published">已发布</option>
+              <option value="0">草稿</option>
+              <option value="1">已发布</option>
             </select>
           </div>
           <div class="form-group">
@@ -111,6 +110,56 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
   <script>NProgress.done()</script>
+  <script type="text/html" id="cateList">
+    {{each data}}
+      <option value="{{$value._id}}">{{$value.title}}</option>
+    {{/each}}
+  </script>
+  <script>
+    $(function () {
+      //获取分类列表
+      $.ajax({
+        url: `http://47.111.184.55:3000/categories`,
+        type: 'get',
+        success: function (data) {
+          var html = template('cateList',{data: data});
+          $('#category').html(html);
+        }
+      })
+    
+      //上传文章封面
+      $('#feature').on('change',function () {
+        var formData = new FormData();
+        formData.append('cover',this.files[0]);
+        $.ajax({
+          url: `http://47.111.184.55:3000/upload`,
+          type: 'post',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function (data) {
+            // console.log(data);
+            $('#thumbnail').val(data[0].cover);
+          }
+        })
+      })
+    
+      //实现文章发布功能
+      $('#addForm').on('submit',function () {
+        var formData = $(this).serialize();
+        $.ajax({
+          url: `http://47.111.184.55:3000/posts`,
+          type: 'post',
+          data: formData,
+          success: function () {
+            location.href = './posts.html'
+          }
+        })
+        return false;
+      })
+    })
+  </script>
 </body>
 </html>
