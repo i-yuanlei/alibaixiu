@@ -31,7 +31,7 @@
         <strong>错误！</strong>发生XXX错误
       </div> -->
       <div class="row">
-        <div class="col-md-4">
+        <div class="col-md-4" id="modifyBox">
           <form id="cateForm">
             <h2>添加分类</h2>
             <div class="form-group">
@@ -121,6 +121,23 @@
     </tr>
     {{/each}}
   </script>
+  <!-- 修改列表模板 -->
+  <script type="text/html" id="modifyCate">
+    <form id="modifyForm" data-id="{{_id}}">
+      <h2>添加分类</h2>
+      <div class="form-group">
+        <label>名称</label>
+        <input class="form-control" type="text" placeholder="请输入分类名称" name="title" value="{{title}}">
+      </div>
+      <div class="form-group">
+        <label>图标</label>
+        <input class="form-control" type="text" placeholder="请输入分类图标类名" name="className" value="{{className}}">
+      </div>
+      <div class="form-group">
+        <button class="btn btn-primary" type="submit">添加</button>
+      </div>
+    </form>
+  </script>
   <script>
     $( function () {
       //添加分类
@@ -145,6 +162,49 @@
           var html = template('cateListTpl',{ data: data })
           // console.log(html);
           $('#cateListBox').html(html);
+        }
+      })
+    
+      //获取要编辑的数据
+      $('#cateListBox').on('click','.edit',function () {
+        var id = $(this).attr('data-id');
+        $.ajax({
+          url: `http://47.111.184.55:3000/categories/${id}`,
+          success: function (data) {
+            var html = template('modifyCate',data);
+            // console.log(html);
+            $('#modifyBox').html(html);
+          }
+        })
+      })
+    
+      //将编辑好的数据同步到数据库
+      $('#modifyBox').on('submit','#modifyForm',function () {
+        var formData = $(this).serialize();
+        // console.log(formData);
+        var id = $(this).attr('data-id');
+        $.ajax({
+          url: `http://47.111.184.55:3000/categories/${id}`,
+          type: 'put',
+          data: formData,
+          success: function () {
+            location.reload();
+          }
+        })
+        return false;
+      })
+    
+      //删除分类
+      $('#cateListBox').on('click','.delete',function () {
+        if(confirm('确认删除')){
+          var id = $(this).attr('data-id');
+          $.ajax({
+            url: `http://47.111.184.55:3000/categories/${id}`,
+            type: 'delete',
+            success: function () {
+              location.reload();
+            }
+          })
         }
       })
     })
